@@ -1,0 +1,1036 @@
+// ==UserScript==
+// @name         LAS1 Quicklinks | FCR | ASIN Print
+// @version      2.2
+// @description  Adds easily accessible alternatives to ASIN print, barcode print, and numerous links to other commonly used features from the FC Menu to FC Research. Prints text with Alt-Click. Initial code from @mojordaq
+// @author         @ijustmaa
+// @match          http://fcresearch-na.aka.amazon.com/*/results?s=*
+// @match          http://fcresearch-eu.aka.amazon.com/*/results?s=*
+// @match          https://fcresearch-na.aka.amazon.com/*/results?s=*
+// @match          https://fcresearch-eu.aka.amazon.com/*/results?s=*
+// @match          https://fcresearch-na.aka.amazon.com/
+// @match          http://fcresearch-eu.aka.amazon.com/*/results?*
+// @match          http://fcresearch-na.aka.amazon.com/*/results?*
+// @match          http://fcresearch-eu.aka.amazon.com/*/search
+// @match          http://fcresearch-na.aka.amazon.com/*/search
+// @match          http://aft-sherlock-service-na.amazon.com/*/search
+// @match          http://aft-sherlock-service-eu.amazon.com/*/search
+// @match          http://aft-sherlock-service-na.amazon.com/*/results?*
+// @match          http://aft-sherlock-service-na.amazon.com/*/results?s*
+// @match          http://aft-sherlock-service-eu.amazon.com/*/results?*
+// @exclude        http://aft-sherlock-service-na.amazon.com/FTW3/search
+// @update         https://axzile.corp.amazon.com/-/carthamus/script/quicklinks-%7C-fs3-%7C-asin-print
+// @download     https://axzile.corp.amazon.com/-/carthamus/script/quicklinks-%7C-fs3-%7C-asin-print
+// @require         https://drive-render.corp.amazon.com/view/scdavids@/jquery-3.6.0.js
+// @require         https://drive-render.corp.amazon.com/view/jachyd@/TamperMonkey/fcrp/jquery.js
+// @require         https://drive-render.corp.amazon.com/view/jachyd@/TamperMonkey/fcrp/bcode.js
+// @require         https://drive-render.corp.amazon.com/view/jachyd@/TamperMonkey/fcrp/cookie.js
+// @grant           GM_xmlhttpRequest
+// @icon            https://cdn.logojoy.com/wp-content/uploads/20230629132442/Amazon-logo.jpg
+// @connect      *
+// @run-at        document-body
+// ==/UserScript==
+
+var current_location = window.location;
+var $ = window.jQuery;
+var Print_Status;
+//document.getElementById("search").style.setProperty('width', '250px', 'important');
+function waitForKeyElements(e, t, a, n) {
+    var o, r;
+    (o = void 0 === n ? $(e) : $(n).contents().find(e)) && o.length > 0 ? (r = !0, o.each(function() {
+        var e = $(this);
+        e.data("alreadyFound") || !1 || (t(e) ? r = !1 : e.data("alreadyFound", !0))
+    })) :
+    r = !1;
+    var l = waitForKeyElements.controlObj || {},
+        i = e.replace(/[^\w]/g, "_"),
+        c = l[i];
+    r && a && c ? (clearInterval(c), delete l[i]) : c || (
+        c = setInterval(function() {
+            waitForKeyElements(e, t, a, n)
+        }, 300),
+        l[i] = c);
+    waitForKeyElements.controlObj = l;
+};
+
+// waitForKeyElements("[data-section-type=\"product\"] > > > > > > [data-row-id=\""+document.getElementById("search").placeholder+"\"]", function(a){
+waitForKeyElements("[data-section-type=\"product\"] > > > > > > table", function(a){
+    a = a[0];
+    var button2;
+    var button3;
+    var button4;
+    var button5;
+    var button6;
+    var button7;
+    var button8;
+    var space2;
+    var q2 = document.createElement("input");
+
+    if(a.rows[1].innerHTML.includes("FCSku") && a.rows[2].innerHTML.includes("Title")){
+        button2 = document.createElement("button");
+        button2.innerHTML = "Print FCSku";
+        button2.onclick = function(){
+            quickPrint(a.rows[1].querySelector("a").textContent, document.getElementById("asinquantity2").value, a.rows[2].querySelector("a").textContent, "FCSku", a.rows[2].querySelector("a"));
+        }
+        space2 = document.createElement("span");
+        space2.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        q2.type = "number";
+        q2.id = "asinquantity2";
+        q2.value = 1;
+        q2.max = 25;
+        q2.min = 1;
+        q2.style.width = "75px";
+        a.rows[1].lastChild.append(space2);
+        a.rows[1].lastChild.append(button2);
+        a.rows[1].lastChild.append(q2);
+    }
+    if(a.rows[2].innerHTML.includes("FCSku") && a.rows[3].innerHTML.includes("Title")){
+        button3 = document.createElement("button");
+        button3.innerHTML = "Print FCSku";
+        button3.onclick = function(){
+            quickPrint(a.rows[2].querySelector("a").textContent, document.getElementById("asinquantity3").value, a.rows[3].querySelector("a").textContent, "FCSku", a.rows[3].querySelector("a"));
+        }
+        var space3 = document.createElement("span");
+        space3.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        var q3 = document.createElement("input");
+        q3.type = "number";
+        q3.id = "asinquantity3";
+        q3.value = 1;
+        q3.max = 25;
+        q3.min = 1;
+        q3.style.width = "75px";
+        a.rows[2].lastChild.append(space3);
+        a.rows[2].lastChild.append(button3);
+        a.rows[2].lastChild.append(q3);
+    }
+    if(a.rows[0].innerHTML.includes("ASIN") && a.rows[3].innerHTML.includes("Title")){
+        button4 = document.createElement("button");
+        button4.innerHTML = "Print ASIN";
+        button4.onclick = function(){
+            quickPrint(a.rows[0].querySelector("a").textContent, document.getElementById("asinquantity4").value, a.rows[3].querySelector("a").textContent, "ASIN", a.rows[3].querySelector("a"));
+        }
+        var space4 = document.createElement("span");
+        space4.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        var q4 = document.createElement("input");
+        q4.type = "number";
+        q4.id = "asinquantity4";
+        q4.value = 1;
+        q4.max = 25;
+        q4.min = 1;
+        q4.style.width = "75px";
+        a.rows[0].lastChild.append(space4);
+        a.rows[0].lastChild.append(button4);
+        a.rows[0].lastChild.append(q4);
+    }
+    if(a.rows[0].innerHTML.includes("ASIN") && a.rows[2].innerHTML.includes("Title")){
+        button5 = document.createElement("button");
+        button5.innerHTML = "Print ASIN";
+        button5.onclick = function(){
+            quickPrint(a.rows[0].querySelector("a").textContent, document.getElementById("asinquantity5").value, a.rows[2].querySelector("a").textContent, "ASIN", a.rows[2].querySelector("a"));
+        }
+        var space5 = document.createElement("span");
+        space5.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        var q5 = document.createElement("input");
+        q5.type = "number";
+        q5.id = "asinquantity5";
+        q5.value = 1;
+        q5.max = 25;
+        q5.min = 1;
+        q5.style.width = "75px";
+        a.rows[0].lastChild.append(space5);
+        a.rows[0].lastChild.append(button5);
+        a.rows[0].lastChild.append(q5);
+    }
+    if(a.rows[0].innerHTML.includes("ASIN") && a.rows[1].innerHTML.includes("Title")){
+        button6 = document.createElement("button");
+        button6.innerHTML = "Print ASIN";
+        button6.onclick = function(){
+            quickPrint(a.rows[0].querySelector("a").textContent, document.getElementById("asinquantity6").value, a.rows[1].querySelector("a").textContent, "ASIN", a.rows[1].querySelector("a"));
+        }
+        var space6 = document.createElement("span");
+        space6.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        var q6 = document.createElement("input");
+        q6.type = "number";
+        q6.id = "asinquantity6";
+        q6.value = 1;
+        q6.max = 25;
+        q6.min = 1;
+        q6.style.width = "75px";
+        a.rows[0].lastChild.append(space6);
+        a.rows[0].lastChild.append(button6);
+        a.rows[0].lastChild.append(q6);
+    }
+    if(a.rows[1].innerHTML.includes("FNSku") && a.rows[3].innerHTML.includes("Title")){
+        button7 = document.createElement("button");
+        button7.innerHTML = "Print FNSku";
+        button7.onclick = function(){
+            quickPrint(a.rows[1].querySelector("a").textContent, document.getElementById("asinquantity7").value, a.rows[3].querySelector("a").textContent, "FNSku", a.rows[3].querySelector("a"));
+        }
+        var space7 = document.createElement("span");
+        space7.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        var q7 = document.createElement("input");
+        q7.type = "number";
+        q7.id = "asinquantity7";
+        q7.value = 1;
+        q7.max = 25;
+        q7.min = 1;
+        q7.style.width = "75px";
+        a.rows[1].lastChild.append(space7);
+        a.rows[1].lastChild.append(button7);
+        a.rows[1].lastChild.append(q7);
+    }
+    if(a.rows[1].innerHTML.includes("FNSku") && a.rows[2].innerHTML.includes("Title")){
+        button8 = document.createElement("button");
+        button8.innerHTML = "Print FNSku";
+        button8.onclick = function(){
+            quickPrint(a.rows[1].querySelector("a").textContent, document.getElementById("asinquantity8").value, a.rows[2].querySelector("a").textContent, "FNSku", a.rows[2].querySelector("a"));
+        }
+        var space8 = document.createElement("span");
+        space8.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        var q8 = document.createElement("input");
+        q8.type = "number";
+        q8.id = "asinquantity8";
+        q8.value = 1;
+        q8.max = 25;
+        q8.min = 1;
+        q8.style.width = "75px";
+        a.rows[1].lastChild.append(space8);
+        a.rows[1].lastChild.append(button8);
+        a.rows[1].lastChild.append(q8);
+    }
+});
+function addButton(elem, title){
+    var button = document.createElement("button");
+    button.innerHTML = "Print FCSku";
+    button.onclick = function(){
+        quickPrint(elem.textContent, document.getElementById("print" + title).value);
+    }
+    var space = document.createElement("span");
+    space.innerHTML = "&nbsp;&nbsp;&nbsp;";
+    var q = document.createElement("input");
+    q.type = "number";
+    q.id = "print" + title;
+    q.value = 1;
+    q.max = 25;
+    q.min = 1;
+    q.style.width = "75px";
+    elem.append(space);
+    elem.lastChild.append(button);
+    elem.lastChild.append(q);
+}
+function quickPrint(asin, quantity, desc, type, link){
+    asin = asin.trim();
+    getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(asin) +
+        "&text=" + asciihex(asin) +
+        "&quantity=" + quantity +
+        "&desc=" + asciihex(desc) +
+        "&seq=" + genId(),
+        "Print Button",asin,type,quantity,desc,link);
+}
+
+function quickPrint2(barcode,type){
+    getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(barcode) +
+        "&text=" + asciihex(barcode) +
+        "&quantity=1" +
+        "&desc=" +
+        "&seq=" + genId(),
+        "Alt-Click",barcode,type,1,"N/A","N/A");
+}
+
+    function sendMessageNew(mode,asin,type,quantity,desc,link) {
+        var lt = new Date().toLocaleString() + " (" + Intl.DateTimeFormat().resolvedOptions().timeZone + ")";
+var d = new Date();
+var tz = d.toString().split("GMT")[1];
+        var msg = "FC Research Print V1.1.8\nMode: " + mode + "\n\nLogin: " + login + "\nWHID: " + whid + "\nLocal Time: " + lt + "\nTime Zone: " + tz + "\nWebsite: " + current_location + "\n\nBarcode: " + asin + "\nType: " + type + "\nQuantity: " + quantity + "\nDescription: " + desc + "\nLink: " + link + "\n\nStatus: " + Print_Status;
+        var request = new XMLHttpRequest();
+      request.open("POST", "https://hooks.slack.com/workflows/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", true);
+      request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      var params = {
+          "message": msg
+      }
+      request.send(JSON.stringify(params));
+      var request2 = new XMLHttpRequest();
+      request2.open("POST", "https://hooks.chime.aws/incomingwebhooks/57ac74cf-327c-4d67-b99a-36eacc49b184?token=WXRrazJXajl8MXxKMEs4S2FsUGVCMVEtSDFlUklEakpEWXlHMlZuR09jZDVCVXliRTg5b0NR", true);
+      request2.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      var params2 = {
+          "Content": msg
+      }
+      request2.send(JSON.stringify(params2));
+    }
+
+function getStatus(url,mode,asin,type,quantity,desc,link) {
+    var xmlhttp;
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+    xmlhttp.onreadystatechange = function () {
+			if (xmlhttp.readyState == 4) {
+				if (xmlhttp.responseText == "valid"){
+					 Print_Status = "Successful";
+                sendMessageNew(mode,asin,type,quantity,desc,link);
+                document.getElementById("search").value = "";}
+				else if (xmlhttp.responseText == "invalid"){
+					 Print_Status = "Unsuccessful (Printer Error)";
+                sendMessageNew(mode,asin,type,quantity,desc,link);
+                alert("Barcode: " + asin + "\n\nFailed to print the barcode!\nPlease check to see if your printer is plugged in and turned on.");}
+                else {
+                    Print_Status = "Unsuccessful (Printmon Error)";
+                sendMessageNew(mode,asin,type,quantity,desc,link);
+                alert("Barcode: " + asin + "\n\nFailed to print the barcode!\nPrintmon not installed!\nPrintmon is required is required to use this script.");}
+			}
+		};
+    document.getElementById("search").focus();
+}
+var ip = getCookie("fcmenu-remoteAddr");
+var whid = getCookie("fcmenu-warehouseId");
+var badgeId = getCookie("fcmenu-employeeId");
+var login = getCookie("fcmenu-employeeLogin");
+function getCookie(c){
+    var cookies = document.cookie.split(";");
+    for(var i = 0; i < cookies.length; i++){
+        if(cookies[i].includes(c)){
+            return (cookies[i].substring(cookies[i].indexOf("=")+1));
+        }
+    }
+    console.log(`didn't find ${c}`);
+}
+
+function genId() {
+    var id1 = "";
+    for (var i = 0; i < 10; i++){
+        id1 += Math.floor(Math.random() * 9);
+    }
+    return id1;
+}
+
+function asciihex(str) {
+    var text1 = "";
+    for (var i = 0, l = str.length; i < l; i++) {
+        var hex1 = Number(str.charCodeAt(i)).toString(16);
+        text1 += hex1;
+    }
+    return text1;
+}
+
+document.addEventListener ("keydown", function (FreePrint) {
+    if (FreePrint.altKey && FreePrint.key === "p") {
+        FreePrintPage();
+        barcodeQuantity.value = 1;
+        barcodeText.value = "";
+    }
+} );
+
+    document.body.addEventListener("click", altClickPrint, false);
+        function altClickPrint(event) {
+        if ( ! event.altKey ) return
+        if (event.target.innerText.includes("LPN")) {
+
+let barcodeText = event.target.innerText.split('\n')[0].trim()
+	const response = confirm("Barcode: " + barcodeText + "\n\nLPN's are considered unique and should not be printed.\n\nPress OK to continue, or Cancel to stop.");
+if (response) {
+    // add code if the user pressed the Ok button
+        quickPrint2(barcodeText,"LPN")
+} else {
+    Print_Status = "Cancelled"
+    sendMessageNew("Alt-Click",barcodeText,"LPN",1,"N/A","N/A")
+    // add code if the user pressed the Cancel button
+}
+        }
+        else {
+        let barcodeText = event.target.innerText.split('\n')[0].trim()
+        quickPrint2(barcodeText,"Unknown")
+        }
+    }
+
+
+    const barcodeShowStyle = document.createElement('style')
+    barcodeShowStyle.innerHTML =
+`
+.barcodes_cover {
+  display: none;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #f3f3f3cc;
+  z-index: 160;
+  align-items: center;
+  justify-items: center;
+}
+
+.barcodes_cover>.barcodes_panel {
+  display: inline;
+  width: 100px;
+  height: 350px;
+  background-color: #fff;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  min-width: 25rem;
+  min-height: 17rem;
+  grid-template-rows: 10% auto;
+  align-items: center;
+  justify-items: center;
+  box-shadow: 1px 1px 4px #999;
+}
+
+.barcodes_cover>.barcodes_panel>p {
+  display: block;
+  margin-top:1rem;
+  color:#444;
+}
+`;
+
+// making DOM elements
+        var space = document.createElement("span");
+    space.innerHTML = "<br><br><br><br>";
+            var space1 = document.createElement("span");
+    space1.innerHTML = "<br><br>";
+
+    var buttonClose = document.createElement("button");
+     buttonClose.innerHTML = "Close";
+    buttonClose.onclick = function(){
+        document.getElementById("search").focus();
+            bar_cover.style.display="none"
+    };
+
+        var buttonFPrint = document.createElement("button");
+     buttonFPrint.innerHTML = "Print";
+    buttonFPrint.onclick = function(){
+        if (barcodeText.value == ""){
+                Print_Status = "Unsuccessful (Barcode Empty)"
+    sendMessageNew("Free Print",barcodeText.value,"Unknown",barcodeQuantity.value,"N/A","N/A")
+            alert("Please enter text into the barcode box.")
+        } else if (barcodeText.value.includes("LPN")){
+        	const response = confirm("Barcode: " + barcodeText.value + "\n\nLPN's are considered unique and should not be printed.\n\nPress OK to continue, or Cancel to stop.");
+if (response) {
+    // add code if the user pressed the Ok button
+            getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(barcodeText.value) +
+        "&text=" + asciihex(barcodeText.value) +
+        "&quantity=1" +
+        "&desc=" +
+        "&seq=" + genId(),
+        "Free Print",barcodeText.value,"LPN",1,"N/A","N/A");
+
+} else {
+    Print_Status = "Cancelled"
+    sendMessageNew("Free Print",barcodeText.value,"LPN",1,"N/A","N/A")
+    // add code if the user pressed the Cancel button
+}
+        } else {
+    getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(barcodeText.value) +
+        "&text=" + asciihex(barcodeText.value) +
+        "&quantity=" + barcodeQuantity.value +
+        "&desc=" +
+        "&seq=" + genId(),
+        "Free Print",barcodeText.value,"Unknown",barcodeQuantity.value,"N/A","N/A");
+        }
+    };
+            var barcodeText = document.createElement("input");
+        barcodeText.id = "barcodeText";
+                var barcodeQuantity = document.createElement("input");
+        barcodeQuantity.type = "number";
+        barcodeQuantity.id = "barcodeQuantity";
+        barcodeQuantity.min = 1;
+    var bar_cover=document.createElement("div");
+    bar_cover.classList.add("barcodes_cover");
+    let bar_panel = document.createElement("div");
+    bar_panel.classList.add("barcodes_panel");
+    var bar_label = document.createElement('p');
+    var FreePrintText = document.createElement('p');
+        var FreePrintQuantity = document.createElement('p');
+    bar_panel.appendChild(bar_label);
+    bar_panel.appendChild(FreePrintText);
+    bar_panel.appendChild(barcodeText);
+    bar_panel.appendChild(FreePrintQuantity);
+    bar_panel.appendChild(barcodeQuantity);
+    bar_panel.appendChild(space1);
+    bar_panel.appendChild(buttonFPrint);
+    bar_panel.appendChild(space);
+    bar_panel.appendChild(buttonClose);
+    bar_cover.appendChild(bar_panel);
+
+    function FreePrintPage() {
+       bar_label.innerText="Free Print"
+        bar_label.style.textAlign = "center";
+        bar_label.style.fontWeight = "bold";
+        FreePrintText.innerText="Barcode: "
+        FreePrintQuantity.innerText="Quantity: "
+       bar_cover.style.display="grid"
+    }
+
+    document.head.appendChild(barcodeShowStyle);
+    document.body.append(bar_cover);
+document.getElementById('search-profile').type="button";
+document.getElementById('search-profile').style="margin-right:50px";
+document.getElementById('search-button').style="margin-left:10px";
+            var barcodeSearchQuantity = document.createElement("input");
+                barcodeSearchQuantity.type="number";
+                barcodeSearchQuantity.style.width = "50px";
+                barcodeSearchQuantity.value = 1;
+                barcodeSearchQuantity.min = 1;
+document.getElementById('search-profile').value = "Print Barcode";
+            var barcodeSearchText = document.createElement("input");
+        barcodeSearchText.id = "barcodeSearchText";
+var child = document.getElementById('search-profile');
+child.parentNode.insertBefore(barcodeSearchText, child);
+//child.parentNode.insertBefore(barcodeSearchQuantity, child);
+barcodeSearchText.placeholder = "Enter barcode data";
+barcodeSearchText.autocomplete = "off";
+
+    document.getElementById('search-profile').onclick = function(){
+        let BarcodeSearch = document.getElementById("barcodeSearchText").value;
+        if (BarcodeSearch == ""){
+            BarcodeSearch = document.getElementById("search").placeholder
+
+if (BarcodeSearch.includes("LPN")) {
+	const response = confirm("Barcode: " + BarcodeSearch + "\n\nLPN's are considered unique and should not be printed.\n\nPress OK to continue, or Cancel to stop.");
+if (response) {
+    // add code if the user pressed the Ok button
+            getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(BarcodeSearch) +
+        "&text=" + asciihex(BarcodeSearch) +
+        "&quantity=" + barcodeSearchQuantity.value +
+        "&desc=" +
+        "&seq=" + genId(),
+        "Print Search Box (Placeholder)",BarcodeSearch,"LPN",barcodeSearchQuantity.value,"N/A","N/A");
+
+} else {
+    Print_Status = "Cancelled"
+    sendMessageNew("Print Search Box (Placeholder)",BarcodeSearch,"LPN",barcodeSearchQuantity.value,"N/A","N/A")
+    // add code if the user pressed the Cancel button
+}
+        }else{
+    getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(BarcodeSearch) +
+        "&text=" + asciihex(BarcodeSearch) +
+        "&quantity=" + barcodeSearchQuantity.value +
+        "&desc=" +
+        "&seq=" + genId(),
+        "Print Search Box (Placeholder)",BarcodeSearch,"Unknown",barcodeSearchQuantity.value,"N/A","N/A");
+        }
+
+
+
+         //       Print_Status = "Unsuccessful (Barcode Empty)"
+    //sendMessageNew("Print Search Box(Placeholder)",BarcodeSearch,"Unknown",barcodeSearchQuantity.value,"N/A","N/A")
+         //   alert("Please enter text into the text box.")
+            document.getElementById("search").focus();
+        } else if (BarcodeSearch.includes("LPN")) {
+	const response = confirm("Barcode: " + BarcodeSearch + "\n\nLPN's are considered unique and should not be printed.\n\nPress OK to continue, or Cancel to stop.");
+if (response) {
+    // add code if the user pressed the Ok button
+            getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(BarcodeSearch) +
+        "&text=" + asciihex(BarcodeSearch) +
+        "&quantity=" + barcodeSearchQuantity.value +
+        "&desc=" +
+        "&seq=" + genId(),
+        "Print Search Box",BarcodeSearch,"LPN",barcodeSearchQuantity.value,"N/A","N/A");
+
+} else {
+    Print_Status = "Cancelled"
+    sendMessageNew("Print Search Box",BarcodeSearch,"LPN",barcodeSearchQuantity.value,"N/A","N/A")
+    // add code if the user pressed the Cancel button
+}
+        }else{
+    getStatus(
+        "http://localhost:5965/printer?action=print&type=barcode&" +
+        "data=" + asciihex(BarcodeSearch) +
+        "&text=" + asciihex(BarcodeSearch) +
+        "&quantity=" + barcodeSearchQuantity.value +
+        "&desc=" +
+        "&seq=" + genId(),
+        "Print Search Box",BarcodeSearch,"Unknown",barcodeSearchQuantity.value,"N/A","N/A");
+        }
+    };
+
+document.forms[0].id="SearchForm";
+//document.forms.SearchForm
+    document.forms[0].onsubmit= function() {
+  if(barcodeSearchText === document.activeElement)
+  {
+    document.getElementById('search-profile').click();
+    return false;
+  }
+  return true;
+}
+
+// po zaladowaniu listy PZ sortujemy malejaco po dacie zamówienia..
+waitForKeyElements('#purchase-order-placed', function() {
+    $('#purchase-order-placed').click().click();
+});
+
+// po zaladowaniu wysylek sortujemy je po dacie nadejscia malejaco..
+waitForKeyElements('#shipment-arrival', function() {
+    $('#shipment-arrival').click().click();
+});
+
+// po zaladowaniu pozycji z PZ sortujemy malejaco po dacie zamówienia..
+waitForKeyElements('#purchase-order-item-order-date', function() {
+    $('#purchase-order-item-order-date').click().click();
+});
+
+
+//Ustawienia domyslne
+const myCookies = [['cfg-design','1'],['cfg-region','na']];
+for(let i=0;i<myCookies.length;i++){
+    if(document.cookie.indexOf(myCookies[i][0]) == '-1'){
+        $.cookie(myCookies[i][0],myCookies[i][1]);
+    }
+}
+
+//Komunikaty
+const locale = ['', //0
+                '', //1
+                'Quicklinks', //2
+                'Extension edited by ', //3
+                '', //4
+                'Barcode Generator', //5
+                'Settings', //6
+                'Quick Links', //7
+                'Re-Design FCResearch', //8
+                '(Reload needed)', //9
+                'Set default', //10
+                '', //11
+                'Region (e.g. "eu" or "na")', //12
+                '' //13
+                 ];
+
+//obrazy 0=oko,1=,2=ustawienia,3=loading
+const images = ['https://drive-render.corp.amazon.com/view/jachyd@/TamperMonkey/fcrp/1.png','','https://drive-render.corp.amazon.com/view/jachyd@/TamperMonkey/fcrp/3.png','https://drive-render.corp.amazon.com/view/jachyd@/TamperMonkey/fcrp/4.gif',];
+
+
+function loadingDiv(txt){
+   $('body').append('<div id="fcrp-el-loading" ><img src="'+images[3]+'" /> '+txt+'</div>');
+    $('#fcrp-el-loading').css({
+        'position':'fixed',
+        'bottom':'10px',
+        'min-height':'36px',
+        'right':'210px',
+        'padding':'10px',
+        'z-index':'150',
+        'border-radius':'5px',
+        'background-color':'#3f5973',
+        'opacity':0.9,
+        'color':'white',
+        'font-size':'13px'
+    });
+    $('#fcrp-el-loading img').css({'float':'left','padding-right':'3px'});
+}
+
+function generateCodes(code){
+    let codes = code.replace(new RegExp("(\n){2}", 'g'), "*entyr**nextLine**entyr*" ).replace(new RegExp(", ", 'g'), "*entyr*" ).replace(new RegExp(",", 'g'), "*entyr*" ).replace( /\n/g, "*entyr*" ).split( "*entyr*" );
+    $('#fcrp #codes').html("");
+    if(codes.length){
+        for(let cod=0;cod<codes.length;cod++){
+            if(codes[cod].length){
+                if(codes[cod]=='*nextLine*'){
+                    $('#fcrp #codes').append('<div style="height:50px" />');
+                }
+                else {
+                    $('#fcrp #codes').append('<svg id="svg'+cod+'" /><br />');
+                    $('#svg'+cod).JsBarcode(codes[cod], {
+                        format: "CODE128",
+                        width:1,
+                        height:30,});
+                }
+            }
+        }
+    }
+}
+
+
+function copy(text){
+    $('body').append('<input id="fcrp-toCopy" style="display:hidden;" value="'+text+'" />');
+    let copyEl = document.getElementById('fcrp-toCopy');
+    copyEl.select();
+    document.execCommand('copy');
+    $('#fcrp-toCopy').remove();
+}
+
+const tables = ['product','purchase-order','purchase-order-item','receive-history','inventory','inventory-history','carton-contents'],
+      fastPass = [3,5];
+let checkTables = [];
+for(let i=0;i<tables.length;i++){checkTables.push(0);}
+
+function addMenu(el,elint){
+    const elm = "div[data-section-type='"+el+"']";
+
+    //czekam na wiecej
+    let tryCount = 0,tBufor;
+    let tries = setInterval(function(){
+        let neededData = ($('#table-'+el+'_info').text()).split(' ');
+        let showingRows = neededData[3]*1, maxRows = neededData[5]*1;
+        if(fastPass.indexOf(elint) != "-1"){
+            console.log(el+' fast pass ('+maxRows+' rows to check)');
+            maxRows = (maxRows > 300)?300:maxRows;
+        }
+        if(showingRows < maxRows){
+
+            //console.log(el + ': '+showingRows+' < '+maxRows);
+            $(elm+' .dataTables_scrollBody').scrollTop($('#table-'+el).height());
+        }else{
+
+            $(elm+' .dataTables_scrollBody').scrollTop(0);
+            console.log('['+el+'] wszystkie elementy zaladowane');
+
+            //Asin Menu
+            $(elm+' td').filter(function() {
+                //Filtrowanie komorek ([0-9]{1}([A-Z0-9]){7})
+                return ($(this).text().match(/(B0)([A-Z0-9]){8}/) || $(this).text().match(/(X0)([A-Z0-9]{8})/)) && $(this).text().length == 10;
+            }).each(function( index ) {
+                let itemAsin = $.trim($(this).text());
+                $('.fcrp_img_'+el+'_'+index).click(function(){
+                });
+
+                let unique = new Date().getTime();
+                $(this).attr('style','cursor:copy').children().attr('style','cursor:copy!important');
+
+                $(this).contextmenu(function(e){
+                    let posX = e.clientX;
+                    let posY = $(document).scrollTop() + e.clientY;
+
+                    $('body').append('<div id="fcrp-tooltip-'+unique+'" class="fcrp-tooltip"/>');
+                    $('#fcrp-tooltip-'+unique).css({'top':posY,'left':posX});
+
+
+                    $('.fcrp-tooltip').append('<span class="fcrp-ti fcrp-copyA-'+index+'" data-asin="'+itemAsin+'" >Copy</span>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti" target="_blank" href="http://fcresearch-na.aka.amazon.com/WRO1/results?s='+itemAsin+'" >Open in New Tab</a>');
+                    $('.fcrp-tooltip').append('<hr/>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti " target="_blank" href="https://fba-fnsku-commingling-console-na.aka.amazon.com/tool/fnsku-mappings-tool?getMappingsType=ASIN_MAPPINGS&FNSku=&FNSkus=&merchantId=&MSku=&ASIN='+itemAsin+'&includeInactive=true&submit=get&paginationToken=">GetMappings</a>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti " target="_blank" href="https://prepmanager-dub.amazon.com/view/'+itemAsin+'?region=NA">Prep Manager</a>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti " target="_blank" href="https://buyingportal-na.amazon.com/gp/ors/asin/asin_browse.html?ie=UTF8&asin='+itemAsin+'">Procurement</a>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti " target="_blank" href="https://pandash.amazon.com#'+itemAsin+'">PanDash</a>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti " target="_blank" href="https://csi.amazon.com/view?view=simple_product_data_view&item_id='+itemAsin+'&marketplace_id=4&customer_id=&merchant_id=&sku=&fn_sku=&gcid=&fulfillment_channel_code=&listing_type=purchasable&submission_id=&order_id=&external_id=&search_string=&realm=USAmazon&stage=prod&domain_id=&keyword=&submit=Show">CSI</a>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti " target="_blank" href="https://amazon.na/dp/'+itemAsin+'">Amazon.com</a>');
+
+
+                    $('.fcrp-copyA-'+index).click(function(){
+                        copy(itemAsin);
+                    });
+
+
+                    $(document).click(function(){
+                        if($('#fcrp-tooltip-'+unique).length){
+                                $('#fcrp-tooltip-'+unique).remove();
+                        }
+                    });
+                    return false;
+                });
+            });
+
+            //Po Menu
+            $(elm+' td').filter(function() {
+                //Filtrowanie komorek
+                return $(this).text().match(/([0-9]{1}([A-Z0-9]){7})/) && $(this).text().length == 8;
+            }).each(function( index ) {
+                let unique = new Date().getTime();
+
+                $(this).attr('style','cursor:copy').children().attr('style','cursor:copy!important');
+
+                $(this).contextmenu(function(e){
+                    let itemPo = $.trim($(this).text());
+
+                    let posX = e.clientX;
+                    let posY = $(document).scrollTop() + e.clientY;
+
+                    $('body').append('<div id="fcrp-tooltip-'+unique+'" class="fcrp-tooltip"/>');
+                    $('#fcrp-tooltip-'+unique).css({'top':posY,'left':posX});
+
+                    $('.fcrp-tooltip').append('<span class="fcrp-ti fcrp-copyP-'+index+'" data-po="'+itemPo+'" >Copy</span>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti" target="_blank" href="http://fcresearch-na.aka.amazon.com/WRO1/results?s='+itemPo+'" >Open in New Tab</a>');
+                    $('.fcrp-tooltip').append('<hr/>');
+                    $('.fcrp-tooltip').append('<a class="fcrp-ti " target="_blank" href="https://transportation-internal-na.amazon.com/lookups/AsnLookup/AsnLookup-Result.cgi?start_date=&end_date=&pro_area=&bol_area=&po_area='+itemPo+'&arn_area=&asn_id=&encrypted_asn_id=&scac=&asin_area=&shipper_code=&shipper_asn_id=&sscc_area=&fc_id_list=&container_id=&vessel_name=&submit=Submit">ASN Lookup</a>');
+
+                    $('.fcrp-copyP-'+index).click(function(){
+                        copy(itemPo);
+                    });
+
+                    $('.fcrp-po-'+index+'-ppo').click(function(){printLabel($(this).attr('data-po'));});
+
+
+
+
+                    $(document).click(function(){
+                        if($('#fcrp-tooltip-'+unique).length){
+                            $('#fcrp-tooltip-'+unique).remove();
+                        }
+                    });
+                    return false;
+                });
+            });
+
+            console.log('['+el+'] 100%');
+            clearInterval(tries);
+
+            checkTables[elint] = 2;
+
+            if(checkTables.every( (val, i, arr) => val == 2 )){
+                $('#fcrp-el-loading').remove();
+            }
+        }
+    },300);
+}
+
+function waitMenu(){
+    loadingDiv('Loading quick links');
+    let waitmn = setInterval(function(){
+        if(checkTables.every( (val, i, arr) => val > 0 )){
+            clearInterval(waitmn);
+        }
+        else {
+
+            for(let i=0;i<tables.length;i++){
+                if(checkTables[i]){
+                    continue;
+                }
+                else {
+                    console.log('['+tables[i]+'] Sprawdzanie...');
+                    if(!$("#"+tables[i]+"-status").hasClass('loading')){
+                        console.log('['+tables[i]+'] Potwierdzono status - zaladowana');
+
+                        if($("#"+tables[i]+"-status a").length){
+
+                            checkTables[i] = 1;
+                            console.log('['+tables[i]+'] Istnieje');
+                            addMenu(tables[i],i);
+                        }
+                        else {
+                            console.log('['+tables[i]+'] nie istnieje - pomijam');
+                            checkTables[i] = 2;
+                        }
+                    }
+                    console.log('---');
+                }
+            }
+        }
+    },1000);
+}
+function groupSize(){
+    console.log('groupping');
+    let sizesCount = [['Sort',0],['Mezz',0],['Corner',0],['HighRack',0],['TeamLift',0],['HaevyBulky',0],['MechLift',0],['Cubiscan',0]],
+        ready = 0, containingHrv = 0, totalCount = 0,
+        summaryTable = "<span id='fcrp-stb'><table id='sizeSummary' class='a-bordered' style='margin:10px 0px 10px 0px;border:2px solid red;'><thead><tr><th>Size group</th><th>Asins</th></tr></thead><tbody>";
+    $('#fcrp-groupSize').remove();
+    let mainPart = 'div [data-section-type="inventory"]';
+    $('#inventory-container div').html('Size Group');
+
+    $(mainPart+' tbody:eq(1) tr').each(function(index){
+        let opEl = $(mainPart+' tbody:eq(1) tr:eq('+index+') td:eq(0)');
+        let asin = $(mainPart+' tbody:eq(1) tr:eq('+index+') td:eq(1)').text();
+        //getSize
+        $.ajax({
+            method: "POST",
+            headers: {'content-type':"application/x-www-form-urlencoded; charset=UTF-8"},
+            url: "http://fcresearch-na.aka.amazon.com/"+$.cookie('fcmenu-warehouseId')+"/results/product",
+            data: { s: asin},
+            success: function(data){
+                $('#worksheet').html(data);
+                let weight = $('#worksheet tr:eq(5) td').text();
+                let size = $('#worksheet tr:eq(6) td').text();
+                let sort = $('#worksheet tr:eq(10) td').text();
+                let hrv = $('#worksheet tr:eq(12) td').text();
+
+                let group = '';
+                if(hrv == 'true'){
+                    containingHrv ++;
+                    group = '[HRV] ';
+                }
+
+                if(size.length < 1 || weight.length < 1){group+='Cubi';sizesCount[7][1]++;}else{
+                    let temp = size.split(' ');
+
+                    let sizes =[(temp[0]*1),(temp[2]*1),(temp[4]*1)];
+                    sizes.sort(function(a, b){return a-b});
+
+                    let maxSize = sizes[2]*1, secSize=sizes[1]*1;
+                    weight = weight.split(' ')[0];
+
+                    console.log(asin+':'+size+' | '+maxSize+', '+secSize);
+
+                    if(sort == 'true'){group+='Sort';sizesCount[0][1]++;}
+                    else if(maxSize <= 70 && secSize <= 50 && weight < 12){group+='Mezz';sizesCount[1][1]++;}
+                    else if(maxSize <= 105 && secSize <= 70 && weight < 15){group+='Corner';sizesCount[2][1]++;}
+                    else if(maxSize <= 170 && weight < 15){group+='HR';sizesCount[3][1]++;}
+                    else if(maxSize <= 170 && weight <= 30){group+='TL';sizesCount[4][1]++;}
+                    else if(maxSize <= 240 && weight < 45){group+='HB';sizesCount[5][1]++;}
+                    else if(maxSize >= 240 || weight >= 45){group+='Mechlift';sizesCount[6][1]++;}
+                    else {group+='ERROR';}
+                }
+                opEl.html(group);
+                ready++;
+                $('#worksheet').html('');
+            }
+        });
+    });
+
+    let isCategorizationReady = setInterval(function(){
+        console.log(ready+" / "+$(mainPart+' tbody:eq(1) tr').length);
+        if(ready==$(mainPart+' tbody:eq(1) tr').length){
+            sizesCount.sort(function(a,b){return b[1] - a[1];});
+            for(let i=0;i<sizesCount.length;i++){
+                totalCount += sizesCount[i][1];
+                if(sizesCount[i][1]>0){
+                    summaryTable += "<tr><td>"+sizesCount[i][0]+"</td><td>"+sizesCount[i][1]+"</td></tr>";
+                }
+                else{
+                    break;
+                }
+            }
+            let hrvStyle = (containingHrv)?" style='color:red;font-weight:bold;font-size:20px;'":" style='display:none;'";
+            summaryTable += "</tbody></table><p class='dataTables_info' "+hrvStyle+">Container contains HRV asins: "+containingHrv+" / "+totalCount+"</p><br /></span>";
+            $(mainPart+' .a-last .a-box-inner').prepend(summaryTable);
+
+            $('div [data-section-type="inventory"] .section-title').append('<span id="fcrp-gsUndo" class="fcrp-gsb">[Undo]</span>');
+            $('#fcrp-gsUndo').click(function(){
+
+                $('div [data-section-type="inventory"]').find('span[id="fcrp-stb"]').remove();
+                $('#fcrp-gsUndo').remove();
+                $('#inventory-container div').html('Container');
+
+                $(mainPart+' tbody:eq(1) tr').each(function(index){
+                    let toteId = $('#search').attr('placeholder');
+                    $(mainPart+' tbody:eq(1) tr:eq('+index+') td:eq(0)').html('<a href="http://fcresearch-na.aka.amazon.com/'+$.cookie('fcmenu-warehouseId')+'/results?s='+toteId+'">'+toteId+'</a>');
+                });
+
+                $('div [data-section-type="inventory"] .section-title').append('<span id="fcrp-groupSize" class="fcrp-gsb">[Categorize by size]</span>');
+                $('#fcrp-groupSize').click(function(){groupSize()});
+            });
+
+            clearInterval(isCategorizationReady);
+        }
+    },100);
+}
+
+$(document).ready(function(){
+    if(window.location.href == 'https://barcodeapi.org/index.html#128'){
+
+        document.title = locale[5]+" by  howeth"
+        $('body').html("").append("<div id='fcrp'><div id='fcrp_logo'>"+locale[5]+" <small>by howeth</small></div><div id='fcrp_bargen' ><textarea></textarea><br /><div id='codes'></div></div></div>").css({'border':0,'margin':0,'padding':0});
+        $('#fcrp').css({'padding':5,'width':290,'margin':'auto'});
+        $('#fcrp_logo').css('text-align','center');
+
+    } else if (window.location.hostname == 'pandash.amazon.com') {
+        if (window.location.hash) {
+            setTimeout(function() {
+                let boAsin = window.location.hash;
+                boAsin = boAsin.replace('#','');
+                $('#asinsFilter').val(boAsin);
+
+                $('#de').addClass('ui-selected');
+
+                $('#sourceFilter').val('FC');
+                $('#FCinput').css('display','inline');
+                $('#FCinput').val($.cookie('fcmenu-warehouseId'));
+                $('#FCinput').trigger('change');
+                validateFC();
+
+                $('#languageFilter').val('EN');
+                let waitForValidateFc = setInterval(function() {
+                    if ($('.statusOk').length) {
+                        $('#btOk').click();
+                        clearInterval(waitForValidateFc);
+                    }
+                }, 100);
+            }, 500)
+        }
+    } else {
+        let design = ".a-popover-inner{color:white!important;}.a-alert-container {box-shadow: 0 0 0 4px aqua inset !important;background-color:#2e4053!important;color:aqua;}.fcrp_box button{margin-bottom:10px !important;}#fcrp_cfg{background-color:#283747;color:white;border-radius-left-bottom:5px}.a-cal-labels,body,.a-popover-inner,#side-bar{background-color: #17202a;}.a-box,.a-cal-na{background-color: #212f3d ;border:1px #2c3e50 solid;color:white}table.a-keyvalue th{background-color: #283747;color:white;}table.a-keyvalue td, table.a-keyvalue th { border-top: 1px solid #2c3e50;}table.a-keyvalue {border-bottom:1px solid #2c3e50;}.a-box-title .a-box-inner, .a-popover-header {color:white;background: #273746;box-shadow: 0 1px 0 rgba(211, 84, 0,0.5) inset;background: linear-gradient(to bottom, #273746 ,#34495e);}.a-box {border-top-color: #2c3e50!important;}body a{color:#f37d15!important;}.a-search input{color:white;background-color:#34495e!important;border:1px solid  #1c2833 ;box-shadow: 0 1px 0 rgba(211, 84, 0,0.5),0 1px 0 rgba(0,0,0,.07) inset;}.p-icon{border:0px;box-shadow:none;}.p-icon:hover{cursor:pointer;border:none;}table.a-bordered tr:nth-child(2n) {background-color:  #2e4053 ;}table.a-bordered td, table.a-bordered th { border-bottom: 1px solid #283747;}table.a-bordered { border: 1px solid #283747;}table.a-bordered tr:last-child td{border-color:#283747;}table.a-bordered tr:first-child th{background: #283747;color:white;border-color: #283747;border-bottom: 1px solid #283747;box-shadow:none;}.a-nostyle, .a-nostyle span{color:white!important;}.logo-fc ,.logo-research{color:white;}.aui-nav-row {background: linear-gradient(to bottom, #273746 ,#34495e); border-bottom: 1px solid #283747;}a.a-link-section-expander{background-color:#283747;}.a-icon, .p-icon{filter:invert(100%);}a.a-link-section-expander:hover,a.a-link-section-expander:focus{background-color: #2e4053 ;}.a-expander-content{background-color: #2e4053 ;}.a-section-expander-inner,.sidebar-expander-header {border-top: 1px solid  #34495e;}.separator{border-right:1px solid rgba(211, 84, 0,0.5)!important;}";
+        let importantD = ".fcrp-gsb {padding:3px;font-weight:normal;background-color:gray; border-radius:2px;font-size:10pt;cursor:pointer;color:white;margin-left:10px}#fcrp_cfg{background-color:rgba(0,0,0,0.2);}.fcrp-tooltip hr{margin:0px 5px 0px 27px;border-top:1px solid #ccc;}.fcrp-tooltip{z-index:999;position:absolute;width:200px;padding:3px;background-color:#eee;border:solid 1px #ccc;box-shadow:1px 1px 3px rgba(0,0,0,0.8)}.fcrp-ti{display:block;cursor:pointer;width:100%;font-size:9pt;line-height:24px;text-decoration:none!important;color:black!important;box-sizing:border-box;padding:0px 30px;margin:0px 0px 2px 0px}.fcrp-ti:hover{background-color:#c4e8ee}#fcrp_amznsoft a:not(:last-child):after { content: ', ';}";
+        let stylesToAdd = ($.cookie("cfg-design") == 1) ? design + importantD : importantD;
+        $("<style>").text(stylesToAdd).appendTo($("body"));
+
+        $('.a-thumbnail-right').css('border-radius','3px');
+        $('.aui-nav-row .aok-float-right').css('color','white');
+
+        let fc = ((window.location.href).split("/"))[3];
+
+        if (window.location.href == "http://fcresearch-na.aka.amazon.com/" + fc + "/search") {
+            $('body').append('<div class="a-row"><div class="a-column a-span12 a-text-center" style="color:#f37d15;">FCResearch extended!</div></div>');
+        } else {
+            //tworzenie miejsca pracy
+            if (!$('#worksheet').length) {
+                $('body').append('<div id="worksheet" style="display:none" />');
+            }
+            //Size Groupping
+            waitForKeyElements('#table-inventory tbody', function() {
+                const ContainerSample = $('#search').attr('placeholder').substr(0,2);
+                if (ContainerSample == 'ts' || ContainerSample == 'cs') {
+                    $('div [data-section-type="inventory"] .section-title').html($('div [data-section-type="inventory"] .section-title').html()+'<span id="fcrp-groupSize" class="fcrp-gsb">[Categorize by size]</span>');
+                    $('#fcrp-groupSize').click(function() { groupSize(); });
+                }
+            });
+            //Wstawianie buttonow przy PO i Asinach
+            waitMenu();
+
+            let cln = $('.a-expander-container:eq(0)').clone();
+            $('.a-expander-container:eq(0)').remove();
+            $('#side-bar').prepend("<div class='a-expander-container'><a href='javascript:void(0)' data-action='a-expander-toggle' class='a-declarative a-link-section-expander' data-a-expander-toggle='{\"expand_prompt\":\"\", \"collapse_prompt\":\"\"}'><i class='a-icon a-icon-section-collapse'></i><span class='a-expander-prompt'><h6>"+locale[2]+"</h6></span></a><div  class='a-expander-content fcrp_box'><button id='fcrp_bargen'>"+locale[5]+"</button><br /><button id='fcrpSettings'  style='margin-bottom:0px!important;'><img src='"+images[2]+"'/> "+locale[6]+"</button><div id='fcrp_cfg' style='display:none'><h5>"+locale[12]+"</h5><input type='text' id='fcrp_cfgRegion' value='"+$.cookie("cfg-region")+"' /><br /><br /><input type='checkbox' id='fcrp_redesign' class='fcrp_cfgchx' data-cfg='cfg-design'>"+locale[8]+"</span><br />"+locale[9]+"<br /><br /><span id='cfg-res'>"+locale[10]+"</span><br /><br/>"+locale[3]+" <a href='mailto:ijustmaa@amazon.com'>ijustmaa</a></div><div id='fcrp_amznsoft' style='margin-top:10px;'><h5>"+locale[7]+"</h5><a href='http://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop'>IO Print</a><a href='http://localhost:5965/barcodegenerator'>PrintMon</a><a href='https://aft-poirot-website-iad.iad.proxy.amazon.com/'>Side-Line</a><a href='http://aft-qt-na.aka.amazon.com/app/edititems?experience=Desktop'>Edit Items</a><a href='https://dr-sku.amazon.com/en_US/#!/'>Dr.Sku</a><a href='https://csi.amazon.com/view'>CSI</a><a href='https://pandash.amazon.com'>PanDash</a><a href='https://fc-inbound-dock-hub-na.aka.amazon.com/en_US/#/dockmaster/dayschedule/"+$.cookie('fcmenu-warehouseId')+"'>DockMaster</a><a href='https://unified-portal-na.inbound-shipment-signals.scot.a2z.com/#/asnsearch?pageType=search'>ASN Lookup</a><a href='https://prod.iad.networx.scot.amazon.dev/AmazonFulfillmentNetwork/fulfillmentOptions'>FOS Portal</a><a href='https://aft-carton-preditor-app-iad.iad.proxy.amazon.com/wf?version=moveOut'>Carton PrEditor</a></div></div>").append(cln);
+
+            $('.fcrp_box').css({'padding':'15px 15px 10px 10px','text-align':'center'});
+            $('#fcrp_amznsoft').css({'width':180});
+            $('#fcrp_amznsoft h5').css({'color':'white'});
+            $('#fcrp_amznsoft a').attr('target','_blank');
+            $('#fcrp_qty, #printLabel').css('margin-top','5px');
+            $('.fcrp_box button').css({'width':175,'height':30,'border-radius':3});
+            $('#printLabel').css('width',142);
+
+            waitForKeyElements('div [data-section-type="product"] .a-keyvalue',function(){
+                let sortable = $('.a-keyvalue th:contains("Sortable"), .a-keyvalue th:contains("Sortowalna")'),
+                    hrv = $('.a-keyvalue th:contains("Very High Value"), .a-keyvalue th:contains("Bardzo wartościowa")');
+                sortable.css({'background-color':'#3f5973','color':'white'}).parent().css('background-color',(sortable.parent().find('td').text()=='false')?'#a73225':'#359933');
+                hrv.css({'background-color':'#3f5973','color':'white'}).parent().css('background-color',(hrv.parent().find('td').text()=='false')?'#a73225':'#359933');
+            });
+            if ($.cookie('cfg-design') == '1') {
+                $('.fcrp_cfgchx[data-cfg="cfg-design"]').prop('checked', true);
+            }
+
+            $('.fcrp_cfgchx').change(function() {
+                let temp = 0;
+                if ($(this).prop("checked") == true) {
+                    temp = 1;
+                }
+                $.cookie($(this).attr('data-cfg'), temp);
+            });
+
+            $('#fcrp_bargen').css('cursor','pointer').click(function() {
+                const height = screen.height;
+                const width = 520;
+                const leftPos = screen.availWidth - width;
+                const windowFeatures = 'location=no,toolbar=no,menubar=no,scrollbars=yes,resizable=yes,left=' + leftPos + ',top=0,width=' + width + ',height=' + height;
+
+                window.open('https://barcodeapi.org/index.html#128', '_blank', windowFeatures);
+            });
+
+            $('#fcrp_cfgRegion').bind('input', function() {
+                $.cookie('cfg-region', $('#fcrp_cfgRegion').val());
+            });
+
+            $('#cfg-res').css({'text-decoration':'underline','color':'red'}).click(function() {
+                $('.fcrp_cfgchx').prop('checked', true);
+                for (let i = 0; i < myCookies.length; i++) {
+                    $.cookie(myCookies[i][0], myCookies[i][1]);
+                }
+            });
+
+            $('#fcrpSettings').click(function() {
+                if ($('#fcrp_cfg').css('display') == 'none') {
+                    $('#fcrp_cfg').css('display', 'block');
+                } else {
+                    $('#fcrp_cfg').css('display', 'none');
+                }
+            });
+        }
+    }
+})();
